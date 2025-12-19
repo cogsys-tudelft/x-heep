@@ -78,6 +78,14 @@ module xilinx_core_v_mini_mcu_wrapper
   wire                               rst_n;
   logic [CLK_LED_COUNT_LENGTH - 1:0] clk_count;
 
+  // Internal JTAG wires
+  // This is to control the JTAG through the CPU
+  wire int_jtag_tck_i;
+  wire int_jtag_tms_i;
+  wire int_jtag_tdi_i;
+  wire int_jtag_tdo_o;
+
+
   // low active reset
 `ifdef FPGA_NEXYS
   assign rst_n = rst_i;
@@ -108,6 +116,12 @@ module xilinx_core_v_mini_mcu_wrapper
       .CLK_IN1_D_0_clk_p(clk_300mhz_p),
       .clk_out1_0(clk_gen)
   );
+  axi_jtag_bridge_wrapper axi_jtag_bridge_wrapper_i(
+    .tck_0(int_jtag_tck_i),
+    .tdi_0(int_jtag_tdi_i),
+    .tdo_0(int_jtag_tdo_o),
+    .tms_0(int_jtag_tms_i)
+    );
 `elsif FPGA_ZCU102
   xilinx_clk_wizard_wrapper xilinx_clk_wizard_wrapper_i (
       .CLK_IN1_D_0_clk_n(clk_125mhz_n),
@@ -174,11 +188,11 @@ module xilinx_core_v_mini_mcu_wrapper
       .rst_ni(rst_n),
       .boot_select_i(boot_select_i),
       .execute_from_flash_i(execute_from_flash_i),
-      .jtag_tck_i(jtag_tck_i),
-      .jtag_tms_i(jtag_tms_i),
-      .jtag_trst_ni(jtag_trst_ni),
-      .jtag_tdi_i(jtag_tdi_i),
-      .jtag_tdo_o(jtag_tdo_o),
+      .jtag_tck_i(int_jtag_tck_i),
+      .jtag_tms_i(int_jtag_tms_i),
+      .jtag_trst_ni(1'b1),
+      .jtag_tdi_i(int_jtag_tdi_i),
+      .jtag_tdo_o(int_jtag_tdo_o),
       .uart_rx_i(uart_rx_i),
       .uart_tx_o(uart_tx_o),
       .exit_valid_o(exit_valid_o),
